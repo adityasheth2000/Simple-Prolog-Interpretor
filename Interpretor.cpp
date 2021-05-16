@@ -1,7 +1,16 @@
 #include "Interpretor.hpp"
 // #include<bits/stdc++.h>
 // using namespace std;
-
+#define t1(x) cerr << #x << "=" << x << endl
+#define t2(x, y) cerr << #x << "=" << x << " " << #y << "=" << y << endl
+#define t3(x, y, z) cerr << #x << "=" << x << " " << #y << "=" << y << " " << #z << "=" << z << endl
+#define t4(a, b, c, d) cerr << #a << "=" << a << " " << #b << "=" << b << " " << #c << "=" << c << " " << #d << "=" << d << endl
+#define t5(a, b, c, d, e) cerr << #a << "=" << a << " " << #b << "=" << b << " " << #c << "=" << c << " " << #d << "=" << d << " " << #e << "=" << e << endl
+#define t6(a, b, c, d, e, f) cerr << #a << "=" << a << " " << #b << "=" << b << " " << #c << "=" << c << " " << #d << "=" << d << " " << #e << "=" << e << " " << #f << "=" << f << endl
+#define GET_MACRO(_1, _2, _3, _4, _5, _6, NAME, ...) NAME
+#define tr(...)                                    \
+    GET_MACRO(__VA_ARGS__, t6, t5, t4, t3, t2, t1) \
+    (__VA_ARGS__)
 
 Variable::Variable()
 {
@@ -39,10 +48,11 @@ Complex::Complex(string functor_name, vector<Term *> subterms_list) : functor(fu
 void Complex::print()
 {
     cout<<functor<<"(";
-    for(auto x: subterms)
+    for(int i=0;i<subterms.size();i++)
     {
-        x->print();
-        cout<<",";
+        subterms[i]->print();
+        if(i+1<subterms.size())
+            cout<<",";
     }
     cout<<")";
 }
@@ -102,11 +112,15 @@ void DSU_Variables::merge_variables(Variable a, Variable b)
 }    
 
 /*-----------------------Unification part------------------------------------------*/
-
+bool check_constant(Constant *lhs, Constant *rhs)
+{
+    return (lhs->const_int == rhs->const_int) && (lhs->const_str == rhs->const_str);
+}
 bool unification(Term *lhs, Term *rhs, map<Variable, Term*> &variable_assignment)
 {    
     DSU_Variables dsu;
-    unify(lhs,rhs,variable_assignment,dsu);   
+    if(!unify(lhs,rhs,variable_assignment,dsu))
+        return false;   
     bool flag=1;
     for(auto x: variable_assignment){
         auto v=x.first;
@@ -121,14 +135,21 @@ bool unify(Term *lhs, Term *rhs, map<Variable , Term *> &variable_assignment, DS
 {
     if (lhs->variable && rhs->variable)
     {
+        // tr("here1");
         if(!dsu.contains_variable(*(lhs->variable)))
             dsu.insert_variable(*(lhs->variable));   
         if(!dsu.contains_variable(*(rhs->variable)))
             dsu.insert_variable(*(rhs->variable));
         dsu.merge_variables(*(lhs->variable),*(rhs->variable));
+        if(variable_assignment.count(*(lhs->variable)) && variable_assignment.count(*(rhs->variable)))
+        {
+            return unification(variable_assignment[*(lhs->variable)],variable_assignment[*(rhs->variable)],variable_assignment);
+        }
+        return true;
     }
     else if (lhs->variable && !rhs->variable)
     {       
+        // tr("here2");
         if(variable_assignment.count(*(lhs->variable))){
             map<Variable,Term*> tmp_va;
             return unification(variable_assignment[*(lhs->variable)],rhs, tmp_va);
@@ -137,6 +158,7 @@ bool unify(Term *lhs, Term *rhs, map<Variable , Term *> &variable_assignment, DS
     }
     else if (rhs->variable && !lhs->variable)
     {
+        // tr("here3");
         if(variable_assignment.count(*(rhs->variable))){
             map<Variable,Term*> tmp_va;
             return unification(variable_assignment[*(rhs->variable)],lhs,tmp_va);
@@ -145,7 +167,10 @@ bool unify(Term *lhs, Term *rhs, map<Variable , Term *> &variable_assignment, DS
     }
     else if (lhs->complex && rhs->complex)
     {
-        return unify_complex(lhs->complex, rhs->complex, variable_assignment, dsu);
+        // tr("here4");
+        bool f1=unify_complex(lhs->complex, rhs->complex, variable_assignment, dsu);
+        // tr(f1);
+        return f1;
     }
     else if (lhs->constant && rhs->constant)
     {
@@ -157,10 +182,7 @@ bool unify(Term *lhs, Term *rhs, map<Variable , Term *> &variable_assignment, DS
     }
     return true;
 }
-bool check_constant(Constant *lhs, Constant *rhs)
-{
-    return (lhs->const_int == rhs->const_int) && (lhs->const_str == rhs->const_str);
-}
+
 bool unify_complex(Complex *lhs, Complex *rhs, map<Variable , Term *> &variable_assignment, DSU_Variables &dsu)
 {
     if (lhs->functor != rhs->functor)
@@ -173,15 +195,6 @@ bool unify_complex(Complex *lhs, Complex *rhs, map<Variable , Term *> &variable_
     }
     return flag;
 }
-
-/*
-TODO: To proof search a fact, go over entire knowledge base and check if fact term unifies with kb-fact term.
-If does: proof search each dependencies and apply recursion to later check if all variable assignments are valid.
-If yes, add to our answer list else don't.
-*/
-
-
-
     
 void KnowledgeBase::rec(int index,vector<vector<map<Variable,Term*>>> &dependencies, map<Variable,Term*> variable_assignment,vector<map<Variable,Term*>> &valid_assignments)
 {
@@ -227,11 +240,24 @@ vector<map<Variable,Term*>> KnowledgeBase::Proof_Search(Fact f)
     return ans;
 }
 
-
+void print_variable_assignment(map<Variable,Term*> &variable_assignment)
+{
+    for(auto x: variable_assignment)
+    {
+        Variable v=x.first;
+        Term* t=x.second;
+        v.print();
+        cout<<" = ";
+        t->print();
+        cout<<"; ";
+    }
+    cout<<endl;
+}
 
 int main()
 {
 
+    /*
     {
         // X = 1, unification
         Variable X=Variable("X");
@@ -241,11 +267,64 @@ int main()
         map<Variable,Term*> variable_assignment;
         bool f=unification(&lhs,&rhs,variable_assignment);
         cout<<"f="<<f<<endl;
+        for(auto variable: variable_assignment)
+        {
+            Variable v=variable.first;
+            v.print();
+            cout<<": ";
+            variable.second->print();
+            cout<<";";
+        }
+        cout<<endl;
     }
+    */
 
-    {
+    /*{
+        // f(X,5)=f(4,5), unification
+        
+        Constant c5(5);
+        Term ct5(&c5);
 
-    }
+        Constant c4(4);
+        Term ct4(&c4);
+
+        Variable x("X");
+        Term vx(&x);
+
+        Complex cplx_left("f",{&vx,&ct5});
+        Complex cplx_right("f",{&ct4,&ct5});
+        
+        
+        Term lhs(&cplx_left), rhs(&cplx_right);
+        map<Variable,Term*> variable_assignment;
+        bool f=unification(&lhs,&rhs,variable_assignment);
+        tr(f);
+        print_variable_assignment(variable_assignment);
+    }*/
+
+    /*{
+        // k(s("g"),Y)  =  k(X,t("k"))
+        Variable vx("X"), vy("Y");
+        Term tvx(&vx),tvy(&vy);
+        Constant cg("g"),ck("k");
+        Term tg(&cg),tk(&ck);
+        Complex cpg("s",{&tg}),cpk("t",{&tk});
+        Term tcpg(&cpg),tcpk(&cpk); //tcpg=term(s("g"))
+        Complex lc("k",{&tcpg,&tvy});
+        Complex rc("k",{&tvx,&tcpk});
+        
+        Term lhs(&lc),rhs(&rc);
+        
+        // lhs.print();
+        // rhs.print();
+        
+        map<Variable,Term*> variable_assignment;
+        bool f=unification(&lhs,&rhs,variable_assignment);
+        tr(f);
+        print_variable_assignment(variable_assignment);
+    }*/
+
+    
 }
 
 /*
