@@ -1,4 +1,4 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 using namespace std;
 struct Variable
 {
@@ -14,7 +14,7 @@ struct Constant
     bool is_int;
     string const_str;
     int const_int;
-    Constant(string tmp); 
+    Constant(string tmp);
     Constant(int tmp);
     void print();
 };
@@ -40,14 +40,10 @@ struct Term
 
 struct DSU_Variables
 {
-    map<Variable,Variable> parent_variable;
-    map<Variable,int> dsu;
+    map<Variable, Variable> parent_variable;
+    map<Variable, int> dsu;
     bool contains_variable(Variable v);
     void insert_variable(Variable v);
     Variable find_parent(Variable a);
     void merge_variables(Variable a, Variable b);
 };
-
-
-
-
