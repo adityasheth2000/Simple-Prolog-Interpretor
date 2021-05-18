@@ -55,16 +55,19 @@ bool unify(Term *lhs, Term *rhs, map<Variable , Term *> &variable_assignment, DS
 bool check_constant(Constant *lhs, Constant *rhs);
 bool unify_complex(Complex *lhs, Complex *rhs, map<Variable , Term *> &variable_assignment, DSU_Variables &dsu);
 
+/* ----------------------Proof search + Knowledge-Base data structure--------------*/
+
+struct Fact
+{
+    Term* term;
+    vector<Fact> dependencies; // term :- dependencies[0], dependencies[1], ... , dependencies.back().
+    Fact(Term* t, vector<Fact> dep);
+    void print();
+};
 struct KnowledgeBase
 {
-    struct Fact
-    {
-        Term* term;
-        vector<Fact> dependencies; // term :- dependencies[0], dependencies[1], ... , dependencies.back().
-    };
-
     vector<Fact> kb;
     void rec(int index,vector<vector<map<Variable,Term*>>> &dependencies, map<Variable,Term*> variable_assignment,vector<map<Variable,Term*>> &valid_assignments);
     vector<map<Variable,Term*>> Proof_Search(Fact f);
+    void insert_Fact(Fact f);
 };
-

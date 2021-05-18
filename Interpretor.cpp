@@ -1,16 +1,5 @@
 #include "Interpretor.hpp"
-// #include<bits/stdc++.h>
-// using namespace std;
-#define t1(x) cerr << #x << "=" << x << endl
-#define t2(x, y) cerr << #x << "=" << x << " " << #y << "=" << y << endl
-#define t3(x, y, z) cerr << #x << "=" << x << " " << #y << "=" << y << " " << #z << "=" << z << endl
-#define t4(a, b, c, d) cerr << #a << "=" << a << " " << #b << "=" << b << " " << #c << "=" << c << " " << #d << "=" << d << endl
-#define t5(a, b, c, d, e) cerr << #a << "=" << a << " " << #b << "=" << b << " " << #c << "=" << c << " " << #d << "=" << d << " " << #e << "=" << e << endl
-#define t6(a, b, c, d, e, f) cerr << #a << "=" << a << " " << #b << "=" << b << " " << #c << "=" << c << " " << #d << "=" << d << " " << #e << "=" << e << " " << #f << "=" << f << endl
-#define GET_MACRO(_1, _2, _3, _4, _5, _6, NAME, ...) NAME
-#define tr(...)                                    \
-    GET_MACRO(__VA_ARGS__, t6, t5, t4, t3, t2, t1) \
-    (__VA_ARGS__)
+#include "debug_template.cpp"
 
 Variable::Variable()
 {
@@ -199,7 +188,11 @@ bool unify_complex(Complex *lhs, Complex *rhs, map<Variable , Term *> &variable_
     }
     return flag;
 }
-    
+
+/* ----------------------Proof search + Knowledge-Base data structure--------------*/
+
+Fact::Fact(Term* t,vector<Fact> dep):term(t),dependencies(dep){}
+
 void KnowledgeBase::rec(int index,vector<vector<map<Variable,Term*>>> &dependencies, map<Variable,Term*> variable_assignment,vector<map<Variable,Term*>> &valid_assignments)
 {
     if(index==dependencies.size()){
@@ -243,6 +236,20 @@ vector<map<Variable,Term*>> KnowledgeBase::Proof_Search(Fact f)
     }    
     return ans;
 }
+void KnowledgeBase::insert_Fact(Fact f)
+{
+    kb.push_back(f);
+}
+void Fact::print()
+{
+    term->print();
+    cout<<" :- ";
+    for(auto f: dependencies)
+    {
+        f.term->print();
+        cout<<" & ";
+    }
+}
 
 void print_variable_assignment(map<Variable,Term*> &variable_assignment)
 {
@@ -261,12 +268,4 @@ void print_variable_assignment(map<Variable,Term*> &variable_assignment)
 int main()
 { 
     
-    
 }
-
-/*
-Todo : 
-Knowledge base construction
-Unification,
-Query 
-*/
