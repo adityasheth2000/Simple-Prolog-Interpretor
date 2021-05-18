@@ -71,3 +71,11 @@ struct KnowledgeBase
     vector<map<Variable,Term*>> Proof_Search(Fact f);
     void insert_Fact(Fact f);
 };
+
+
+/*---------------Parsing and object formations-------------*/
+
+Term* make_Term(string s);
+Complex* make_Complex(string s);
+Constant* make_Constant(string s);
+Variable* make_Variable(string s);
