@@ -89,8 +89,10 @@ void DSU_Variables::insert_variable(Variable v){
 }
 Variable DSU_Variables::find_parent(Variable a){
     Variable v=a;
-    while(dsu[v]==0)
+    
+    while(dsu[v]==0){
         v=parent_variable[v];
+    }
     return v;
 }
 void DSU_Variables::merge_variables(Variable a, Variable b)
@@ -99,6 +101,8 @@ void DSU_Variables::merge_variables(Variable a, Variable b)
     b=find_parent(b);
     int sz_a=dsu[a];
     int sz_b=dsu[b];
+    if(a==b)
+        return;
     if(sz_a<=sz_b){
         parent_variable[a]=b;
         dsu[b]+=sz_a;
@@ -256,6 +260,7 @@ void print_variable_assignment(map<Variable,Term*> &variable_assignment)
 
 int main()
 { 
+    
     
 }
 

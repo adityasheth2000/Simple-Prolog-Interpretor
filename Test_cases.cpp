@@ -87,4 +87,32 @@ int main()
         if (f)
             print_variable_assignment(variable_assignment);
     }
+
+    {
+        //h(X,Y,g(X,Y)) = h(a,a,g(Y,X))
+        Variable x("X"),y("Y");
+        Term tx=Term(&x);
+        Term ty=Term(&y);
+        Complex cl=Complex("g",{&tx,&ty});
+        Complex cr=Complex("g",{&ty,&tx});
+        Constant cnst=Constant("a");
+
+        Term tcl=Term(&cl);
+        Term tcr=Term(&cr);
+        Term tcnst=Term(&cnst);
+
+        Complex lft=Complex("h",{&tx,&ty,&tcl});
+        Complex rght=Complex("h",{&tcnst,&tcnst,&tcr});
+
+        Term lhs=Term(&lft);
+        Term rhs=Term(&rght);
+        
+        // lhs.print();
+        // rhs.print();
+        
+        map<Variable, Term *> variable_assignment;
+        bool f = unification(&lhs, &rhs, variable_assignment);
+        tr(f);
+        print_variable_assignment(variable_assignment);
+    }
 }
