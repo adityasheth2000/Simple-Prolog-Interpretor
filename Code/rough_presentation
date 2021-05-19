@@ -1,0 +1,31 @@
+1) Introduction to Prolog functionalities: Unification and Proof-search.
+
+Unification Problem: Given 2 expressions, unification function checks if the two expression can be unified by assigning some internal variables to some constant or complex Term. Also returns the variable assignment.
+
+Proof-search Problem: Given a knowledge base of facts{f_1, f_2, .. , f_n}, (each f_i may have dependency on other facts f_i=f_i_1,f_i_2,..f_i_k); there will be a query fact q. Return all the valid assignment of internal variables in q. Each variable assignment state of q should unify with atleast one fact in knowledge base.   
+
+Our project majorly provides implementation to solve these 2 problems.
+
+2) Structures.hpp and Structures.cpp
+3) Unification : 
+	Basic idea:
+	i) recursively keep track of corresponding left term and right term.
+	ii) Whenever both left and right term is variable: Merge the 2 variables in a disjoint-set union data structure maintained.
+	iii) If one of term is variable is variable and other is not: Assign the variable term correspondingly after checking any previous 		assignment of this variable.
+	iv) If both sides are non-variable, check if both sides are same type: if constant directly check equality, if complex: recursively 			unify again.
+	v) if at any point unification fails, we return false.
+	vi) At the end of recursive unification, we check if the variables in same Disjoint union set are assigned unifiable value: if not unification fails and returns false.	
+
+4) Proof-search : 
+	Basic Idea: 
+	i) For finding variable assignment(solutions) to fact q, we iterate through all the pre-given facts in knowledge base.
+	ii) If query fact q and pre-given fact f are unifiable, we find all the possible variable assignment of f's dependencies using proof-search, and recursively try to adjust q's internal variables. A variable assignment of q is valid if the variables satisfy atleast 1 variable assignment in f's dependency.
+	iii) recursively try all possible variable assignments, validate it and store it in dynamic array. 
+	
+5) Demo
+
+6) Improvements possible with the same functionality
+	i) Code parsing is done using trivial code and it doesn't check for errors in syntax. Lexer libraries can be integrated to upgrade syntax checking.
+	ii) Instead of blind-recursion for finding all valid assignments of dependancies in Proof-search, a better implementation would check any cyclic dependancy between 2 facts and report it if found. 
+	iii) In dependency of fact, only (&) operation is used, including (|,&) will be an interesting problem to solve.
+	
